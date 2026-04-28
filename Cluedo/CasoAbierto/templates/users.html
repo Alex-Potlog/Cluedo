@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CasoAbierto — Perfil de l'Agent</title>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep:    #13111C;
+    --bg-mid:     #1E1B2E;
+    --bg-panel:   #2D2A45;
+    --gold:       #D4AF7A;
+    --gold-dim:   #8A6D3B;
+    --crimson:    #C0392B;
+    --crimson-dk: #7B1F16;
+    --cream:      #F0EAD6;
+    --muted:      #7A738F;
+    --green:      #27ae60;
+    --green-lt:   rgba(39,174,96,0.10);
+    --border:     rgba(212,175,122,0.18);
+    --border-hv:  rgba(212,175,122,0.45);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg-deep);
+    color: var(--cream);
+    font-family: 'IBM Plex Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── GRAIN OVERLAY ─── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 999; opacity: 0.35;
+  }
+
+  /* ─── VIGNETTE ─── */
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(13,11,20,0.7) 100%);
+    pointer-events: none; z-index: 998;
+  }
+
+  /* ══════════════════════════════
+     HEADER
+  ══════════════════════════════ */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(19,17,28,0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+
+  .logo {
+    font-family: 'Special Elite', cursive;
+    font-size: 1.35rem;
+    color: var(--gold);
+    letter-spacing: 0.05em;
+    display: flex; align-items: center; gap: 0.6rem;
+    text-decoration: none;
+  }
+  .logo-dot {
+    width: 8px; height: 8px;
+    background: var(--crimson);
+    border-radius: 50%;
+    box-shadow: 0 0 6px var(--crimson);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.4; transform: scale(0.7); }
+  }
+
+  nav { display: flex; align-items: center; gap: 2rem; }
+  nav a {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 400;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+    padding-bottom: 2px;
+    border-bottom: 1px solid transparent;
+  }
+  nav a:hover, nav a.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+  .header-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    background: var(--crimson-dk);
+    color: var(--cream);
+    border: 1px solid var(--crimson);
+    padding: 3px 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* ══════════════════════════════
+     HERO PROFILE BAND
+  ══════════════════════════════ */
+  .profile-hero {
+    position: relative;
+    background: var(--bg-mid);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 2.5rem 2.5rem;
+    overflow: hidden;
+  }
+  .profile-hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(212,175,122,0.03) 39px, rgba(212,175,122,0.03) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(212,175,122,0.03) 39px, rgba(212,175,122,0.03) 40px);
+    pointer-events: none;
+  }
+
+  .profile-hero-inner {
+    position: relative; z-index: 1;
+    max-width: 1100px; margin: 0 auto;
+    display: flex; align-items: flex-start; gap: 2.5rem;
+    flex-wrap: wrap;
+  }
+
+  /* Badge / Avatar */
+  .agent-badge {
+    flex-shrink: 0;
+    width: 110px; height: 110px;
+    border: 2px solid var(--gold-dim);
+    background: var(--bg-panel);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 3rem;
+    position: relative;
+  }
+  .agent-badge::after {
+    content: 'AGENT';
+    position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+    background: var(--crimson);
+    color: #fff;
+    padding: 2px 8px;
+    white-space: nowrap;
+  }
+
+  .profile-info { flex: 1; min-width: 220px; }
+
+  .profile-stamp {
+    display: inline-block;
+    font-family: 'Special Elite', cursive;
+    font-size: 0.62rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--crimson);
+    border: 1px solid var(--crimson);
+    padding: 3px 12px;
+    margin-bottom: 0.8rem;
+    opacity: 0.85;
+    transform: rotate(-1deg);
+    display: inline-block;
+  }
+
+  .profile-name {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 700;
+    color: var(--cream);
+    line-height: 1;
+    margin-bottom: 0.4rem;
+  }
+  .profile-name span { color: var(--gold); font-style: italic; }
+
+  .profile-rank {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 1.2rem;
+  }
+
+  .profile-meta {
+    display: flex; gap: 2rem; flex-wrap: wrap;
+  }
+  .meta-item { }
+  .meta-label {
+    font-size: 0.58rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    display: block;
+    margin-bottom: 2px;
+  }
+  .meta-value {
+    font-family: 'Special Elite', cursive;
+    font-size: 0.95rem;
+    color: var(--cream);
+  }
+
+  /* Stats mini-bar à droite */
+  .profile-stats {
+    display: flex; gap: 1.2rem; flex-wrap: wrap; align-items: flex-start;
+    margin-left: auto;
+  }
+  .stat-box {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    padding: 1rem 1.4rem;
+    text-align: center;
+    min-width: 90px;
+  }
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1;
+    display: block;
+  }
+  .stat-lbl {
+    font-size: 0.58rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 4px;
+    display: block;
+  }
+
+  /* ══════════════════════════════
+     MAIN LAYOUT
+  ══════════════════════════════ */
+  .page-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 3rem 2rem 5rem;
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 2rem;
+  }
+
+  /* ─── SECTION LABELS ─── */
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--crimson);
+    margin-bottom: 0.4rem;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.2rem, 2.5vw, 1.7rem);
+    font-weight: 700;
+    color: var(--cream);
+    margin-bottom: 1.5rem;
+  }
+  .section-title em { color: var(--gold); font-style: italic; }
+
+  /* ─── PANEL BASE ─── */
+  .panel {
+    background: var(--bg-mid);
+    border: 1px solid var(--border);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+  }
+  .panel-tag {
+    position: absolute; top: -1px; left: 2rem;
+    background: var(--bg-panel);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.18em;
+    color: var(--gold-dim);
+    padding: 3px 12px;
+    border: 1px solid var(--border);
+    border-top: none;
+    text-transform: uppercase;
+  }
+
+  /* ══════════════════════════════
+     HISTORIAL D'INTENTS
+  ══════════════════════════════ */
+  .attempt-list { list-style: none; }
+  .attempt-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--border);
+    margin-bottom: 0.6rem;
+    background: var(--bg-panel);
+    transition: border-color 0.2s;
+    position: relative;
+  }
+  .attempt-item:hover { border-color: var(--border-hv); }
+
+  .attempt-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--bg-deep);
+    min-width: 28px;
+    text-align: center;
+  }
+
+  .attempt-details { flex: 1; }
+  .attempt-combo {
+    font-family: 'Special Elite', cursive;
+    font-size: 0.88rem;
+    color: var(--cream);
+    margin-bottom: 3px;
+  }
+  .attempt-combo span { color: var(--gold); }
+  .attempt-time {
+    font-size: 0.62rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  .attempt-result {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border: 1px solid;
+  }
+  .attempt-result.fail {
+    color: var(--crimson);
+    border-color: var(--crimson);
+    background: rgba(192,57,43,0.08);
+  }
+  .attempt-result.success {
+    color: var(--green);
+    border-color: var(--green);
+    background: var(--green-lt);
+  }
+  .attempt-result.partial {
+    color: var(--gold);
+    border-color: var(--gold-dim);
+    background: rgba(212,175,122,0.07);
+  }
+
+  .attempt-hints {
+    display: flex; gap: 0.4rem; flex-wrap: wrap;
+    margin-top: 4px;
+  }
+  .hint-chip {
+    font-size: 0.58rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border: 1px solid rgba(212,175,122,0.25);
+    color: var(--gold-dim);
+    background: rgba(212,175,122,0.05);
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--muted);
+  }
+  .empty-icon { font-size: 2.5rem; display: block; margin-bottom: 0.8rem; opacity: 0.4; }
+  .empty-text {
+    font-family: 'Special Elite', cursive;
+    font-size: 0.9rem;
+    opacity: 0.5;
+  }
+
+  /* ══════════════════════════════
+     CAS ACTIU PANEL
+  ══════════════════════════════ */
+  .active-case-panel {
+    background: var(--bg-mid);
+    border: 1px solid var(--border);
+    padding: 1.8rem;
+    margin-bottom: 2rem;
+    position: relative;
+  }
+  .active-case-panel::before {
+    content: 'CAS EN CURS';
+    position: absolute; top: -1px; left: 1.5rem;
+    background: var(--crimson-dk);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.18em;
+    color: var(--cream);
+    padding: 3px 12px;
+    border: 1px solid var(--crimson);
+    border-top: none;
+    text-transform: uppercase;
+  }
+
+  .case-title {
+    font-family: 'Special Elite', cursive;
+    font-size: 1.1rem;
+    color: var(--gold);
+    margin-bottom: 0.4rem;
+    margin-top: 0.6rem;
+  }
+  .case-sub {
+    font-size: 0.68rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    margin-bottom: 1.2rem;
+  }
+
+  /* Progress bar d'intents */
+  .progress-block { margin-bottom: 1.2rem; }
+  .progress-label {
+    display: flex; justify-content: space-between;
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+  }
+  .progress-label strong { color: var(--cream); }
+  .progress-track {
+    height: 4px;
+    background: var(--bg-panel);
+    position: relative;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+    transition: width 0.4s ease;
+  }
+
+  .dots-row {
+    display: flex; gap: 0.4rem; margin-bottom: 1.5rem;
+  }
+  .dot {
+    width: 11px; height: 11px;
+    border: 1px solid var(--gold-dim);
+    border-radius: 50%;
+  }
+  .dot.used { background: var(--crimson); border-color: var(--crimson); }
+
+  .btn-play {
+    display: block;
+    width: 100%;
+    font-family: 'Special Elite', cursive;
+    font-size: 1rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--bg-deep);
+    background: var(--gold);
+    border: none; outline: none;
+    padding: 14px;
+    cursor: pointer;
+    transition: background 0.2s, letter-spacing 0.2s;
+    text-decoration: none;
+    display: block;
+    text-align: center;
+  }
+  .btn-play:hover { background: #e8c88a; letter-spacing: 0.28em; }
+
+  /* ══════════════════════════════
+     SIDEBAR
+  ══════════════════════════════ */
+  .sidebar { }
+
+  /* Rang / Nivell */
+  .rank-card {
+    background: var(--bg-mid);
+    border: 1px solid var(--border);
+    padding: 1.8rem;
+    margin-bottom: 2rem;
+    position: relative;
+  }
+  .rank-card::before {
+    content: 'CREDENCIAL';
+    position: absolute; top: -1px; left: 1.5rem;
+    background: var(--bg-panel);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.18em;
+    color: var(--gold-dim);
+    padding: 3px 12px;
+    border: 1px solid var(--border);
+    border-top: none;
+  }
+
+  .rank-icon {
+    font-size: 2.8rem;
+    text-align: center;
+    margin: 0.8rem 0 0.5rem;
+  }
+  .rank-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gold);
+    text-align: center;
+    margin-bottom: 0.2rem;
+  }
+  .rank-desc {
+    font-size: 0.68rem;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.6;
+    margin-bottom: 1.2rem;
+  }
+
+  .xp-track {
+    margin-bottom: 0.4rem;
+  }
+  .xp-label {
+    display: flex; justify-content: space-between;
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.35rem;
+  }
+  .xp-bar {
+    height: 3px;
+    background: var(--bg-panel);
+  }
+  .xp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+    width: 60%;
+  }
+  .xp-next {
+    font-size: 0.6rem;
+    color: var(--muted);
+    text-align: right;
+    margin-top: 3px;
+    opacity: 0.6;
+  }
+
+  /* Distintius */
+  .badges-card {
+    background: var(--bg-mid);
+    border: 1px solid var(--border);
+    padding: 1.8rem;
+    margin-bottom: 2rem;
+    position: relative;
+  }
+  .badges-card::before {
+    content: 'DISTINTIUS';
+    position: absolute; top: -1px; left: 1.5rem;
+    background: var(--bg-panel);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.18em;
+    color: var(--gold-dim);
+    padding: 3px 12px;
+    border: 1px solid var(--border);
+    border-top: none;
+  }
+
+  .badges-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.8rem;
+    margin-top: 0.8rem;
+  }
+  .badge-item {
+    text-align: center;
+    padding: 0.8rem 0.4rem;
+    border: 1px solid var(--border);
+    background: var(--bg-panel);
+    transition: border-color 0.2s;
+    cursor: default;
+  }
+  .badge-item:hover { border-color: var(--border-hv); }
+  .badge-item.locked { opacity: 0.35; }
+
+  .badge-emoji { font-size: 1.6rem; display: block; margin-bottom: 4px; }
+  .badge-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    line-height: 1.3;
+  }
+
+  /* Estadístiques */
+  .stats-card {
+    background: var(--bg-mid);
+    border: 1px solid var(--border);
+    padding: 1.8rem;
+    position: relative;
+  }
+  .stats-card::before {
+    content: 'ESTADÍSTIQUES';
+    position: absolute; top: -1px; left: 1.5rem;
+    background: var(--bg-panel);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.18em;
+    color: var(--gold-dim);
+    padding: 3px 12px;
+    border: 1px solid var(--border);
+    border-top: none;
+  }
+
+  .stat-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-row-label {
+    font-size: 0.68rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+  .stat-row-val {
+    font-family: 'Special Elite', cursive;
+    font-size: 0.9rem;
+    color: var(--cream);
+  }
+  .stat-row-val.gold { color: var(--gold); }
+  .stat-row-val.green { color: var(--green); }
+  .stat-row-val.red { color: var(--crimson); }
+
+  /* ══════════════════════════════
+     DIVIDER
+  ══════════════════════════════ */
+  .divider {
+    display: flex; align-items: center; gap: 1rem;
+    margin-bottom: 1.5rem; margin-top: 0.5rem;
+  }
+  .divider::before, .divider::after {
+    content: ''; flex: 1;
+    height: 1px; background: var(--border);
+  }
+  .divider span {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* ══════════════════════════════
+     CRONÒMETRE PANEL
+  ══════════════════════════════ */
+  .timer-panel {
+    background: var(--bg-mid);
+    border: 1px solid var(--border);
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    position: relative;
+  }
+  .timer-panel::before {
+    content: 'TEMPS DE RESOLUCIÓ';
+    position: absolute; top: -1px; left: 2rem;
+    background: var(--bg-panel);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.18em;
+    color: var(--gold-dim);
+    padding: 3px 12px;
+    border: 1px solid var(--border);
+    border-top: none;
+  }
+  .timer-display {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 2rem;
+    font-weight: 500;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    margin-top: 0.5rem;
+  }
+  .timer-label {
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .timer-status {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--crimson);
+    border: 1px solid var(--crimson);
+    padding: 4px 12px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .timer-status::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--crimson);
+    border-radius: 50%;
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+
+  /* ══════════════════════════════
+     FOOTER
+  ══════════════════════════════ */
+  footer {
+    border-top: 1px solid var(--border);
+    background: rgba(13,11,20,0.8);
+    padding: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .footer-logo {
+    font-family: 'Special Elite', cursive;
+    font-size: 1rem;
+    color: var(--gold);
+  }
+  .footer-logo span { color: var(--muted); font-size: 0.7rem; display: block; margin-top: 2px; }
+  .footer-links { display: flex; gap: 1.5rem; }
+  .footer-links a {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--gold); }
+  .footer-copy {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--muted);
+    opacity: 0.5;
+  }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .profile-hero   { animation: fadeUp 0.5s ease 0.1s both; }
+  .page-wrap > *  { animation: fadeUp 0.5s ease 0.25s both; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 900px) {
+    .page-wrap { grid-template-columns: 1fr; }
+    .sidebar { order: -1; }
+    nav { display: none; }
+    .profile-stats { margin-left: 0; }
+    footer { flex-direction: column; align-items: flex-start; }
+  }
+  @media (max-width: 600px) {
+    .profile-hero-inner { flex-direction: column; }
+    .timer-panel { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════
+     HEADER
+══════════════════════════════════ -->
+<header>
+  <a href="#" class="logo">
+    <div class="logo-dot"></div>
+    CasoAbierto
+  </a>
+  <nav>
+    <a href="#">El Joc</a>
+    <a href="#">Com Jugar</a>
+    <a href="#" class="active">Expedient</a>
+  </nav>
+  <div class="header-badge">Perfil Agent</div>
+</header>
+
+
+<!-- ══════════════════════════════
+     PROFILE HERO
+══════════════════════════════════ -->
+<section class="profile-hero">
+  <div class="profile-hero-inner">
+
+    <div class="agent-badge">🕵️</div>
+
+    <div class="profile-info">
+      <div class="profile-stamp">Dossier Confidencial · Agent Assignat</div>
+      <h1 class="profile-name">Roger <span>Vidal</span></h1>
+      <p class="profile-rank">// Inspector en Pràctiques · Rang 3</p>
+      <div class="profile-meta">
+        <div class="meta-item">
+          <span class="meta-label">ID Agència</span>
+          <span class="meta-value">AGT-00742</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Data d'Ingrés</span>
+          <span class="meta-value">04.2026</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Estat</span>
+          <span class="meta-value" style="color:var(--crimson)">● Investigació Activa</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-stats">
+      <div class="stat-box">
+        <span class="stat-num">7</span>
+        <span class="stat-lbl">Casos Totals</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-num" style="color:var(--green)">3</span>
+        <span class="stat-lbl">Resolts</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-num" style="color:var(--crimson)">4</span>
+        <span class="stat-lbl">Fracassos</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-num">43%</span>
+        <span class="stat-lbl">Precisió</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════
+     MAIN + SIDEBAR
+══════════════════════════════════ -->
+<div class="page-wrap">
+
+  <!-- ════ COLUMNA PRINCIPAL ════ -->
+  <main>
+
+    <!-- Cas Actiu -->
+    <div class="active-case-panel">
+      <p class="case-title">Cas #0008 — La Mansió de les Ombres</p>
+      <p class="case-sub">// Iniciat avui · Solució Secreta en custòdia del sistema</p>
+
+      <div class="progress-block">
+        <div class="progress-label">
+          <span>Intents usats</span>
+          <strong>2 / 5</strong>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" style="width: 40%"></div>
+        </div>
+      </div>
+
+      <div class="dots-row">
+        <div class="dot used"></div>
+        <div class="dot used"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+
+      <a href="#" class="btn-play">⚖ Continuar Investigació</a>
+    </div>
+
+    <!-- Cronòmetre -->
+    <div class="timer-panel">
+      <div>
+        <div class="timer-display" id="timer">00:12:47</div>
+        <div class="timer-label">temps acumulat en aquest cas</div>
+      </div>
+      <div class="timer-status">En Curs</div>
+    </div>
+
+    <!-- Historial d'intents -->
+    <div class="section-label">// Arxiu d'Interrogatoris</div>
+    <h2 class="section-title">Historial <em>d'Intents</em></h2>
+
+    <div class="panel">
+      <div class="panel-tag">Cas Actual · #0008</div>
+
+      <ul class="attempt-list" style="margin-top:0.5rem">
+
+        <li class="attempt-item">
+          <div class="attempt-num">02</div>
+          <div class="attempt-details">
+            <div class="attempt-combo">
+              <span>Dr. Negre</span> · Revòlver · Biblioteca
+            </div>
+            <div class="attempt-hints">
+              <span class="hint-chip">arma correcta</span>
+            </div>
+            <div class="attempt-time">fa 3 min · 00:09:22</div>
+          </div>
+          <div class="attempt-result partial">Parcialment Correcte</div>
+        </li>
+
+        <li class="attempt-item">
+          <div class="attempt-num">01</div>
+          <div class="attempt-details">
+            <div class="attempt-combo">
+              Coronel Mostaza · Corda · Cuina
+            </div>
+            <div class="attempt-hints"></div>
+            <div class="attempt-time">fa 9 min · 00:03:11</div>
+          </div>
+          <div class="attempt-result fail">Incorrecte</div>
+        </li>
+
+      </ul>
+    </div>
+
+    <div class="divider"><span>casos anteriors</span></div>
+
+    <!-- Casos anteriors -->
+    <div class="panel">
+      <div class="panel-tag">Arxiu Tancat</div>
+
+      <ul class="attempt-list" style="margin-top:0.5rem">
+
+        <li class="attempt-item">
+          <div class="attempt-num" style="color:var(--green)">✔</div>
+          <div class="attempt-details">
+            <div class="attempt-combo">
+              Cas #0007 — <span>Professora Plum</span> · Canelobre · Biblioteca
+            </div>
+            <div class="attempt-time">23/04/2026 · Resolt en 3 intents · 00:08:04</div>
+          </div>
+          <div class="attempt-result success">CAS TANCAT</div>
+        </li>
+
+        <li class="attempt-item">
+          <div class="attempt-num" style="color:var(--crimson)">✘</div>
+          <div class="attempt-details">
+            <div class="attempt-combo">
+              Cas #0006 — Srta. Escarlata · Ganivet · Saló
+            </div>
+            <div class="attempt-time">20/04/2026 · Esgotat · 5 intents</div>
+          </div>
+          <div class="attempt-result fail">ARXIVAT</div>
+        </li>
+
+        <li class="attempt-item">
+          <div class="attempt-num" style="color:var(--green)">✔</div>
+          <div class="attempt-details">
+            <div class="attempt-combo">
+              Cas #0005 — <span>Sr. Verd</span> · Clau anglesa · Billar
+            </div>
+            <div class="attempt-time">17/04/2026 · Resolt en 2 intents · 00:04:51</div>
+          </div>
+          <div class="attempt-result success">CAS TANCAT</div>
+        </li>
+
+        <li class="attempt-item">
+          <div class="attempt-num" style="color:var(--crimson)">✘</div>
+          <div class="attempt-details">
+            <div class="attempt-combo">
+              Cas #0004 — Sra. Blanch · Tub de Plom · Conservatori
+            </div>
+            <div class="attempt-time">14/04/2026 · Esgotat · 5 intents</div>
+          </div>
+          <div class="attempt-result fail">ARXIVAT</div>
+        </li>
+
+        <li class="attempt-item">
+          <div class="attempt-num" style="color:var(--green)">✔</div>
+          <div class="attempt-details">
+            <div class="attempt-combo">
+              Cas #0003 — <span>Coronel Mostaza</span> · Revòlver · Estudi
+            </div>
+            <div class="attempt-time">10/04/2026 · Resolt en 4 intents · 00:15:22</div>
+          </div>
+          <div class="attempt-result success">CAS TANCAT</div>
+        </li>
+
+      </ul>
+    </div>
+
+  </main>
+
+  <!-- ════ SIDEBAR ════ -->
+  <aside class="sidebar">
+
+    <!-- Rang -->
+    <div class="rank-card">
+      <div class="rank-icon">🔍</div>
+      <div class="rank-title">Inspector</div>
+      <div class="rank-desc">Has demostrat instint investigador. La teva carrera avança cap al rang de Comissari.</div>
+      <div class="xp-track">
+        <div class="xp-label">
+          <span>Experiència</span>
+          <span>600 / 1000 XP</span>
+        </div>
+        <div class="xp-bar">
+          <div class="xp-fill"></div>
+        </div>
+        <div class="xp-next">400 XP per a Comissari</div>
+      </div>
+    </div>
+
+    <!-- Distintius -->
+    <div class="badges-card">
+      <ul class="badges-grid" style="margin-top:1rem">
+        <li class="badge-item">
+          <span class="badge-emoji">🥇</span>
+          <span class="badge-name">Primer Cas</span>
+        </li>
+        <li class="badge-item">
+          <span class="badge-emoji">⚡</span>
+          <span class="badge-name">Resolució Ràpida</span>
+        </li>
+        <li class="badge-item">
+          <span class="badge-emoji">🎯</span>
+          <span class="badge-name">2 Intents</span>
+        </li>
+        <li class="badge-item locked">
+          <span class="badge-emoji">🔒</span>
+          <span class="badge-name">Sense Errors</span>
+        </li>
+        <li class="badge-item locked">
+          <span class="badge-emoji">🔒</span>
+          <span class="badge-name">10 Casos</span>
+        </li>
+        <li class="badge-item locked">
+          <span class="badge-emoji">🔒</span>
+          <span class="badge-name">Comissari</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Estadístiques -->
+    <div class="stats-card" style="margin-top:0">
+      <div style="height:0.8rem"></div>
+      <div class="stat-row">
+        <span class="stat-row-label">Millor temps</span>
+        <span class="stat-row-val gold">00:04:51</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-row-label">Temps mitjà</span>
+        <span class="stat-row-val">00:09:17</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-row-label">Intents per cas</span>
+        <span class="stat-row-val">3.2</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-row-label">Sospitós encertat</span>
+        <span class="stat-row-val green">57%</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-row-label">Arma encertada</span>
+        <span class="stat-row-val gold">71%</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-row-label">Habitació encertada</span>
+        <span class="stat-row-val red">42%</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-row-label">Ràtio resolució</span>
+        <span class="stat-row-val">43%</span>
+      </div>
+    </div>
+
+  </aside>
+
+</div>
+
+
+<!-- ══════════════════════════════
+     FOOTER
+══════════════════════════════════ -->
+<footer>
+  <div class="footer-logo">
+    CasoAbierto
+    <span>Operació Full-Stack · Django + Vue.js</span>
+  </div>
+  <div class="footer-links">
+    <a href="#">El Joc</a>
+    <a href="#">Com Jugar</a>
+    <a href="#">Expedient</a>
+    <a href="#">Admin</a>
+  </div>
+  <div class="footer-copy">
+    Dossier Confidencial &mdash; Destrueix després de llegir
+  </div>
+</footer>
+
+
+<script>
+  /* ── Cronòmetre en viu ── */
+  let seconds = 12 * 60 + 47;
+  const timerEl = document.getElementById('timer');
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function formatTime(s) {
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const sec = s % 60;
+    return `${pad(h)}:${pad(m)}:${pad(sec)}`;
+  }
+
+  setInterval(() => {
+    seconds++;
+    if (timerEl) timerEl.textContent = formatTime(seconds);
+  }, 1000);
+</script>
+
+</body>
+</html>

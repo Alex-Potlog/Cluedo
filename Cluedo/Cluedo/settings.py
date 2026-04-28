@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'django_vite',
     'Cluedo',
     'CasoAbierto',
+    "bootstrap5",
+    "django-user-accounts"
 ]
 
 MIDDLEWARE = [

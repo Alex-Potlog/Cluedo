@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CasoAbierto — Com Jugar</title>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep:    #13111C;
+    --bg-mid:     #1E1B2E;
+    --bg-panel:   #2D2A45;
+    --gold:       #D4AF7A;
+    --gold-dim:   #8A6D3B;
+    --crimson:    #C0392B;
+    --crimson-dk: #7B1F16;
+    --cream:      #F0EAD6;
+    --muted:      #7A738F;
+    --border:     rgba(212,175,122,0.18);
+    --border-hv:  rgba(212,175,122,0.45);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg-deep);
+    color: var(--cream);
+    font-family: 'IBM Plex Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grain */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 999; opacity: 0.35;
+  }
+  /* Vignette */
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(13,11,20,0.7) 100%);
+    pointer-events: none; z-index: 998;
+  }
+
+  /* ══════════════════
+     HEADER
+  ══════════════════ */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(19,17,28,0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+  .logo {
+    font-family: 'Special Elite', cursive;
+    font-size: 1.35rem;
+    color: var(--gold);
+    letter-spacing: 0.05em;
+    display: flex; align-items: center; gap: 0.6rem;
+    text-decoration: none;
+  }
+  .logo-dot {
+    width: 8px; height: 8px;
+    background: var(--crimson);
+    border-radius: 50%;
+    box-shadow: 0 0 6px var(--crimson);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.4; transform: scale(0.7); }
+  }
+  nav { display: flex; align-items: center; gap: 2rem; }
+  nav a {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 400;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+    padding-bottom: 2px;
+    border-bottom: 1px solid transparent;
+  }
+  nav a:hover, nav a.active { color: var(--gold); border-bottom-color: var(--gold); }
+  .header-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    background: var(--crimson-dk);
+    color: var(--cream);
+    border: 1px solid var(--crimson);
+    padding: 3px 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* ══════════════════
+     PAGE HERO
+  ══════════════════ */
+  .page-hero {
+    position: relative;
+    padding: 5rem 2.5rem 3.5rem;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+  }
+  .page-hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg,   transparent, transparent 39px, rgba(212,175,122,0.04) 39px, rgba(212,175,122,0.04) 40px),
+      repeating-linear-gradient(90deg,  transparent, transparent 39px, rgba(212,175,122,0.04) 39px, rgba(212,175,122,0.04) 40px);
+    pointer-events: none;
+  }
+  /* Big decorative background number */
+  .page-hero::after {
+    content: '?';
+    position: absolute; right: 3rem; top: 50%; transform: translateY(-50%);
+    font-family: 'Playfair Display', serif;
+    font-size: 22rem;
+    font-weight: 700;
+    color: rgba(212,175,122,0.04);
+    line-height: 1;
+    pointer-events: none;
+  }
+  .page-hero-inner { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; }
+  .breadcrumb {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1.2rem;
+    display: flex; align-items: center; gap: 0.6rem;
+  }
+  .breadcrumb span { color: var(--gold-dim); }
+  .page-hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.5rem, 7vw, 5rem);
+    font-weight: 700;
+    color: var(--cream);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+  }
+  .page-hero h1 em { color: var(--gold); font-style: italic; }
+  .page-hero-desc {
+    font-family: 'Special Elite', cursive;
+    font-size: 1rem;
+    color: var(--muted);
+    max-width: 500px;
+    line-height: 1.8;
+  }
+
+  /* ══════════════════
+     MAIN
+  ══════════════════ */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 5rem 2.5rem;
+  }
+
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--crimson);
+    margin-bottom: 0.5rem;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+    font-weight: 700;
+    color: var(--cream);
+    margin-bottom: 3rem;
+  }
+  .section-title em { color: var(--gold); font-style: italic; }
+
+  /* ─── FLOW STEPS ─── */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: 5rem;
+    position: relative;
+  }
+  /* vertical line */
+  .flow::before {
+    content: '';
+    position: absolute;
+    left: 28px; top: 0; bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--crimson), var(--gold-dim), transparent);
+  }
+
+  .flow-step {
+    display: flex;
+    gap: 2.5rem;
+    align-items: flex-start;
+    padding: 2.5rem 0;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    transition: background 0.2s;
+  }
+  .flow-step:last-child { border-bottom: none; }
+
+  .flow-num {
+    flex-shrink: 0;
+    width: 56px; height: 56px;
+    background: var(--bg-mid);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--gold);
+    position: relative; z-index: 1;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .flow-step:hover .flow-num {
+    border-color: var(--gold);
+    background: var(--bg-panel);
+  }
+
+  .flow-content { flex: 1; padding-top: 0.5rem; }
+  .flow-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--crimson);
+    margin-bottom: 0.4rem;
+  }
+  .flow-content h3 {
+    font-family: 'Special Elite', cursive;
+    font-size: 1.3rem;
+    color: var(--gold);
+    margin-bottom: 0.7rem;
+  }
+  .flow-content p {
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.9;
+    max-width: 600px;
+  }
+  .flow-detail {
+    margin-top: 1rem;
+    padding: 1rem 1.2rem;
+    background: var(--bg-panel);
+    border-left: 2px solid var(--gold-dim);
+    font-size: 0.72rem;
+    color: var(--cream);
+    opacity: 0.8;
+    line-height: 1.8;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* ─── DIVIDER ─── */
+  .divider {
+    display: flex; align-items: center; gap: 1rem;
+    margin-bottom: 3.5rem;
+  }
+  .divider::before, .divider::after {
+    content: ''; flex: 1;
+    height: 1px; background: var(--border);
+  }
+  .divider span {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* ─── RULES GRID ─── */
+  .rules-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 5rem;
+  }
+  .rule-card {
+    background: var(--bg-mid);
+    border: 1px solid var(--border);
+    padding: 1.8rem 1.5rem;
+    position: relative;
+    transition: border-color 0.25s, transform 0.2s;
+  }
+  .rule-card:hover {
+    border-color: var(--border-hv);
+    transform: translateY(-3px);
+  }
+  .rule-card::before {
+    content: attr(data-rule);
+    position: absolute; top: -1px; left: 16px;
+    background: var(--bg-panel);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    padding: 3px 10px;
+    border: 1px solid var(--border);
+    border-top: none;
+  }
+  .rule-icon { font-size: 1.6rem; margin-bottom: 1rem; display: block; }
+  .rule-card h4 {
+    font-family: 'Special Elite', cursive;
+    font-size: 1rem;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+  }
+  .rule-card p {
+    font-size: 0.72rem;
+    color: var(--muted);
+    line-height: 1.75;
+  }
+
+  /* ─── VERDICT TABLE ─── */
+  .verdict-section { margin-bottom: 5rem; }
+  .verdict-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  .verdict-card {
+    background: var(--bg-mid);
+    border: 1px solid var(--border);
+    padding: 2rem;
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+    transition: border-color 0.2s;
+  }
+  .verdict-card.success { border-left: 3px solid #27ae60; }
+  .verdict-card.fail    { border-left: 3px solid var(--crimson); }
+  .verdict-card:hover   { border-color: var(--border-hv); }
+
+  .verdict-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+    line-height: 1;
+    padding-top: 2px;
+  }
+  .verdict-card h4 {
+    font-family: 'Special Elite', cursive;
+    font-size: 1.05rem;
+    margin-bottom: 0.5rem;
+  }
+  .verdict-card.success h4 { color: #2ecc71; }
+  .verdict-card.fail h4    { color: #e74c3c; }
+  .verdict-card p {
+    font-size: 0.72rem;
+    color: var(--muted);
+    line-height: 1.75;
+  }
+
+  /* ─── TIPS BOX ─── */
+  .tips-panel {
+    background: var(--bg-mid);
+    border: 1px solid var(--border);
+    padding: 2.5rem;
+    position: relative;
+    margin-bottom: 5rem;
+  }
+  .tips-panel::before {
+    content: 'NOTES DEL COMISSARI';
+    position: absolute; top: -1px; left: 2rem;
+    background: var(--bg-panel);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.2em;
+    color: var(--gold-dim);
+    padding: 4px 14px;
+    border: 1px solid var(--border);
+    border-top: none;
+  }
+  .tips-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  .tips-list li {
+    font-size: 0.75rem;
+    color: var(--muted);
+    line-height: 1.7;
+    padding-left: 1.2rem;
+    position: relative;
+  }
+  .tips-list li::before {
+    content: '→';
+    position: absolute; left: 0;
+    color: var(--gold-dim);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .tips-list li strong {
+    color: var(--cream);
+    font-weight: 500;
+  }
+
+  /* ─── CTA FINAL ─── */
+  .cta-final {
+    text-align: center;
+    padding: 4rem 2rem;
+    border: 1px solid var(--border);
+    background: var(--bg-mid);
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-final::before {
+    content: 'CAS OBERT';
+    position: absolute;
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-family: 'Playfair Display', serif;
+    font-size: 10rem;
+    font-weight: 700;
+    color: rgba(212,175,122,0.03);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  .cta-final p.stamp {
+    font-family: 'Special Elite', cursive;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--crimson);
+    border: 1px solid var(--crimson);
+    display: inline-block;
+    padding: 4px 16px;
+    margin-bottom: 1.5rem;
+    transform: rotate(-1deg);
+    opacity: 0.85;
+  }
+  .cta-final h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 700;
+    color: var(--cream);
+    margin-bottom: 1rem;
+    position: relative;
+  }
+  .cta-final h2 em { color: var(--gold); font-style: italic; }
+  .cta-final .sub {
+    font-family: 'Special Elite', cursive;
+    font-size: 0.95rem;
+    color: var(--muted);
+    margin-bottom: 2.5rem;
+    position: relative;
+  }
+  .btn-primary {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--bg-deep);
+    background: var(--gold);
+    border: none; outline: none;
+    padding: 14px 36px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    text-decoration: none;
+    display: inline-block;
+    position: relative;
+  }
+  .btn-primary:hover { background: #e8c88a; transform: translateY(-2px); }
+
+  /* ══════════════════
+     FOOTER
+  ══════════════════ */
+  footer {
+    border-top: 1px solid var(--border);
+    background: rgba(13,11,20,0.8);
+    padding: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .footer-logo {
+    font-family: 'Special Elite', cursive;
+    font-size: 1rem;
+    color: var(--gold);
+    text-decoration: none;
+  }
+  .footer-logo span {
+    color: var(--muted); font-size: 0.7rem;
+    display: block; margin-top: 2px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .footer-links { display: flex; gap: 1.5rem; }
+  .footer-links a {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--gold); }
+  .footer-copy {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--muted);
+    opacity: 0.5;
+    letter-spacing: 0.05em;
+  }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .page-hero-inner { animation: fadeUp 0.6s ease 0.1s both; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 768px) {
+    .rules-grid, .verdict-grid, .tips-list { grid-template-columns: 1fr; }
+    nav { display: none; }
+    .flow::before { display: none; }
+    .flow-step { flex-direction: column; gap: 1rem; }
+    footer { flex-direction: column; align-items: flex-start; }
+    .page-hero::after { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════
+     HEADER
+══════════════════════════════ -->
+<header>
+  <a href="caso_abierto.html" class="logo">
+    <div class="logo-dot"></div>
+    CasoAbierto
+  </a>
+  <nav>
+    <a href="caso_abierto.html">El Joc</a>
+    <a href="#" class="active">Com Jugar</a>
+    <a href="caso_abierto.html#expedient">Expedient</a>
+  </nav>
+  <div class="header-badge">Manual</div>
+</header>
+
+
+<!-- ══════════════════════════════
+     PAGE HERO
+══════════════════════════════ -->
+<section class="page-hero">
+  <div class="page-hero-inner">
+    <div class="breadcrumb">
+      CasoAbierto <span>/</span> Com Jugar
+    </div>
+    <h1>Anatomia d'una<br><em>Investigació</em></h1>
+    <p class="page-hero-desc">
+      Tot detective necessita conèixer les regles del joc abans d'entrar a la sala d'interrogatoris. Llegeix amb atenció, Inspector.
+    </p>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════
+     MAIN
+══════════════════════════════ -->
+<main>
+
+  <!-- ─── FLOW PASOS ─── -->
+  <section>
+    <div class="section-label">// Funcionament del Joc</div>
+    <h2 class="section-title">Els tres <em>passos</em> de la investigació</h2>
+
+    <div class="flow">
+
+      <div class="flow-step">
+        <div class="flow-num">01</div>
+        <div class="flow-content">
+          <div class="flow-tag">Fase inicial</div>
+          <h3>Generació del Misteri</h3>
+          <p>
+            En el moment que inicies una partida, el sistema defineix en segon pla la <strong style="color:var(--cream)">Solució Secreta</strong>: una combinació aleatòria d'un personatge, una arma i una habitació. Aquesta informació queda guardada al servidor Django i tu, com a investigador, no tens cap accés directe.
+          </p>
+          <div class="flow-detail">
+            ⚙ Backend (Django ORM) genera i desa la Solució Secreta de forma anònima a la base de dades.
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="flow-num">02</div>
+        <div class="flow-content">
+          <div class="flow-tag">Fase central</div>
+          <h3>L'Interrogatori</h3>
+          <p>
+            A la interfície (Vue.js) veuràs tres llistes: <strong style="color:var(--cream)">Personatges</strong>, <strong style="color:var(--cream)">Armes</strong> i <strong style="color:var(--cream)">Habitacions</strong>. Selecciona un element de cada categoria, formula la teva teoria i prem el botó <strong style="color:var(--crimson)">ACUSAR</strong>. La petició s'envia via <code style="color:var(--gold-dim)">fetch</code> a l'API de Django sense recarregar la pàgina.
+          </p>
+          <div class="flow-detail">
+            ⚙ POST /api/acusar/ → El frontend envia { personatge, arma, habitacio } i rep la resposta en temps real.
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="flow-num">03</div>
+        <div class="flow-content">
+          <div class="flow-tag">Fase final</div>
+          <h3>El Veredicte</h3>
+          <p>
+            El sistema compara la teva acusació amb la Solució Secreta i retorna immediatament el resultat. Si has encertat els tres elements, el <strong style="color:var(--cream)">cas es tanca</strong>. Si no, la investigació continua: analitza les pistes que el sistema et proporciona i torna a intentar-ho.
+          </p>
+          <div class="flow-detail">
+            ⚙ Resposta JSON: { "correcte": true/false, "pistes": "Arma correcta, lloc no" }
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <div class="divider"><span>regles obligatòries</span></div>
+
+
+  <!-- ─── REGLES ─── -->
+  <section>
+    <div class="section-label">// Regles d'Or de l'Investigador</div>
+    <h2 class="section-title">Restriccions <em>tècniques</em></h2>
+
+    <div class="rules-grid">
+      <div class="rule-card" data-rule="Regla 01">
+        <span class="rule-icon">⚖️</span>
+        <h4>L'ORM és la Llei</h4>
+        <p>Tota interacció amb la base de dades s'ha de fer obligatòriament a través del Django ORM. No s'accepta SQL cru sota cap circumstància.</p>
+      </div>
+      <div class="rule-card" data-rule="Regla 02">
+        <span class="rule-icon">🚫</span>
+        <h4>Prohibit Recarregar</h4>
+        <p>La vista de Vue.js és completament reactiva. Totes les accions —obtenir llistes, acusar— s'han de realitzar via JavaScript <code style="color:var(--gold-dim)">fetch</code>, sense cap recàrrega de pàgina.</p>
+      </div>
+      <div class="rule-card" data-rule="Regla 03">
+        <span class="rule-icon">🏛️</span>
+        <h4>Silos Tecnològics</h4>
+        <p>Vue.js s'encarrega exclusivament de la interfície i la interactivitat. Django gestiona exclusivament la seguretat de les dades i l'API. Cap dels dos envaeix el territori de l'altre.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <div class="divider"><span>veredictes possibles</span></div>
+
+
+  <!-- ─── VEREDICTES ─── -->
+  <section class="verdict-section">
+    <div class="section-label">// El Sistema Avalua l'Intent</div>
+    <h2 class="section-title">Resultats <em>possibles</em></h2>
+
+    <div class="verdict-grid">
+      <div class="verdict-card success">
+        <div class="verdict-icon">✔</div>
+        <div>
+          <h4>Correcte → El Cas es Tanca</h4>
+          <p>Has identificat correctament el personatge, l'arma i l'habitació. El sistema confirma l'acusació i declara el cas resolt. La teva reputació com a detectiu queda intacta.</p>
+        </div>
+      </div>
+      <div class="verdict-card fail">
+        <div class="verdict-icon">✘</div>
+        <div>
+          <h4>Incorrecte → La Investigació Continua</h4>
+          <p>Un o més elements de la teva acusació no coincideixen amb la Solució Secreta. El sistema et pot proporcionar pistes parcials si has assolit el nivell Inspector o superior.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <div class="divider"><span>consells del comissari</span></div>
+
+
+  <!-- ─── TIPS ─── -->
+  <section>
+    <div class="section-label">// Consells d'Or</div>
+    <h2 class="section-title">Notes del <em>Comissari</em></h2>
+
+    <div class="tips-panel">
+      <ul class="tips-list">
+        <li><strong>Comença pel mínim funcional (MVP).</strong> No busquis l'Excel·lent abans de tenir un joc que funcioni per a l'Aprovat.</li>
+        <li><strong>L'API és el teu pont.</strong> Prova els endpoints (ex: <code style="color:var(--gold-dim)">/api/personatges/</code>) directament al navegador abans de programar el Vue.</li>
+        <li><strong>Revisa les teves eines.</strong> Les URLs, la consola del navegador (F12) per errors de Vue, i el terminal de Django. Allà hi ha les pistes.</li>
+        <li><strong>Totes les dades base s'han de crear prèviament</strong> des de la interfície de Django Admin: personatges, armes, habitacions i la solució.</li>
+        <li><strong>Pensa en capes.</strong> Primer els models, després l'API, finalment el frontend. No saltis passos o et perdràs.</li>
+        <li><strong>Prova cada endpoint per separat.</strong> Confirma que el GET funciona abans d'implementar el POST d'acusació.</li>
+      </ul>
+    </div>
+  </section>
+
+
+  <!-- ─── CTA ─── -->
+  <div class="cta-final">
+    <p class="stamp">Missió Activa</p>
+    <h2>Estàs llest per <em>resoldre</em> el cas?</h2>
+    <p class="sub">El temps corre, Detectiu. Endinsa't al codi i resol el misteri.</p>
+    <a href="caso_abierto.html#joc" class="btn-primary">⚖ Iniciar Investigació</a>
+  </div>
+
+</main>
+
+
+<!-- ══════════════════════════════
+     FOOTER
+══════════════════════════════ -->
+<footer>
+  <a href="caso_abierto.html" class="footer-logo">
+    CasoAbierto
+    <span>Operació Full-Stack · Django + Vue.js</span>
+  </a>
+  <div class="footer-links">
+    <a href="caso_abierto.html">El Joc</a>
+    <a href="#">Com Jugar</a>
+    <a href="caso_abierto.html#expedient">Expedient</a>
+    <a href="/admin">Admin</a>
+  </div>
+  <div class="footer-copy">
+    Dossier Confidencial &mdash; Destrueix després de llegir
+  </div>
+</footer>
+
+</body>
+</html>
