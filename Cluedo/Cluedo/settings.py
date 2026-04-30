@@ -25,7 +25,10 @@ SECRET_KEY = 'django-insecure-9^=5_8oa5aovnzrd0@rbf2wb*+mlwhmvjp^r_hzrg^tsde5)*8
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+
+# CSRF settings for local development with Vite proxy
+CSRF_TRUSTED_ORIGINS = ['http://localhost:5173', 'http://127.0.0.1:5173']
 
 SITE_ID = 1
 

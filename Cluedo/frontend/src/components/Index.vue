@@ -1,6 +1,8 @@
 
 <script setup>
 import { ref } from 'vue'
+import { getUrl } from '../utils.js'
+import AppHeader from './AppHeader.vue'
 
 const acusacio = ref({
   personatge: '',
@@ -54,19 +56,7 @@ const ferAcusacio = () => {
 
 <template>
   <div class="caso-abierto-body">
-    <!-- HEADER -->
-    <header class="d-flex align-items-center justify-content-between p-3 sticky-top main-header">
-      <div class="logo d-flex align-items-center gap-2">
-        <div class="logo-dot"></div>
-        CasoAbierto
-      </div>
-      <nav class="d-none d-md-flex align-items-center gap-4">
-        <a href="#joc" class="active">El Joc</a>
-        <a href="#com-jugar">Com Jugar</a>
-        <a href="#expedient">Expedient</a>
-      </nav>
-      <div class="header-badge">Cas Obert</div>
-    </header>
+    <AppHeader activePage="joc" badgeText="Cas Obert" />
 
     <!-- HERO -->
     <section class="hero d-flex align-items-center justify-content-center p-5 text-center">
@@ -80,7 +70,7 @@ const ferAcusacio = () => {
         </p>
         <div class="cta-group d-flex gap-3 justify-content-center flex-wrap">
           <a href="#joc" class="btn-primary-custom text-decoration-none">Iniciar Investigació</a>
-          <a href="#com-jugar" class="btn-secondary-custom text-decoration-none">Com Jugar</a>
+          <a :href="getUrl('/com-jugar')" class="btn-secondary-custom text-decoration-none">Com Jugar</a>
         </div>
       </div>
     </section>
@@ -96,7 +86,7 @@ const ferAcusacio = () => {
           <div class="col-md-4">
             <div class="evidence-card h-100 p-4 position-relative">
               <span class="evidence-tag">Evidència 01</span>
-              <span class="evidence-icon mb-3 d-block">🕵️</span>
+              <span class="evidence-icon mb-3 d-block"><i class="bi bi-person-fill-exclamation text-gold"></i></span>
               <h3 class="mb-2">El Personatge</h3>
               <p class="m-0">Qui ha comès el crim? Entre la llista de sospitosos, un d'ells amaga la veritat. El teu instint t'ha de guiar.</p>
             </div>
@@ -104,7 +94,7 @@ const ferAcusacio = () => {
           <div class="col-md-4">
             <div class="evidence-card h-100 p-4 position-relative">
               <span class="evidence-tag">Evidència 02</span>
-              <span class="evidence-icon mb-3 d-block">🗡️</span>
+              <span class="evidence-icon mb-3 d-block"><i class="bi bi-crosshair text-gold"></i></span>
               <h3 class="mb-2">L'Arma</h3>
               <p class="m-0">Amb quin objecte es va cometre el crim? Cada arma deixa una empremta única. Analitza les proves amb cura.</p>
             </div>
@@ -112,7 +102,7 @@ const ferAcusacio = () => {
           <div class="col-md-4">
             <div class="evidence-card h-100 p-4 position-relative">
               <span class="evidence-tag">Evidència 03</span>
-              <span class="evidence-icon mb-3 d-block">🏚️</span>
+              <span class="evidence-icon mb-3 d-block"><i class="bi bi-bank text-gold"></i></span>
               <h3 class="mb-2">L'Habitació</h3>
               <p class="m-0">En quina estança de la mansió va ocórrer tot? El lloc del crim revela molt sobre qui el va cometre.</p>
             </div>
@@ -177,10 +167,10 @@ const ferAcusacio = () => {
             </div>
           </div>
 
-          <button class="acusar-btn w-100 py-3" @click="ferAcusacio">⚖ Acusar</button>
+          <button class="acusar-btn w-100 py-3" @click="ferAcusacio"><i class="bi bi-scales me-2"></i>Acusar</button>
 
           <div v-if="mostrarResultat" :class="['result-panel mt-4 p-3 border', resultatClasse]">
-            {{ missatgeResultat }}
+            <i :class="missatgeResultat.includes('CAS TANCAT') ? 'bi bi-check-circle-fill me-2' : 'bi bi-exclamation-triangle-fill me-2'"></i>{{ missatgeResultat.replace('⚠ ', '').replace('✔ ', '') }}
           </div>
         </div>
       </section>
@@ -220,14 +210,14 @@ const ferAcusacio = () => {
 
     <!-- FOOTER -->
     <footer class="d-flex flex-wrap align-items-center justify-content-between p-4 border-top shadow-sm">
-      <div class="footer-logo mb-3 mb-md-0">
+      <a :href="getUrl('/')" class="footer-logo mb-3 mb-md-0 d-block text-decoration-none">
         CasoAbierto
         <span class="d-block mt-1">Operació Full-Stack · Django + Vue.js</span>
-      </div>
+      </a>
       <div class="footer-links d-flex gap-3 mb-3 mb-md-0 flex-wrap">
-        <a href="#joc">El Joc</a>
-        <a href="#com-jugar">Com Jugar</a>
-        <a href="#expedient">Expedient</a>
+        <a :href="getUrl('/')">El Joc</a>
+        <a :href="getUrl('/com-jugar')">Com Jugar</a>
+        <a :href="getUrl('/users')">Expedient</a>
         <a href="/admin">Admin</a>
       </div>
       <div class="footer-copy">

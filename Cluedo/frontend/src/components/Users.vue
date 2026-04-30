@@ -1,5 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { getUrl } from '../utils.js'
+import AppHeader from './AppHeader.vue'
 
 const segons = ref(12 * 60 + 47) // 12:47
 let timerInterval = null
@@ -26,25 +28,13 @@ onUnmounted(() => {
 
 <template>
   <div class="caso-abierto-body">
-    <!-- HEADER -->
-    <header class="d-flex align-items-center justify-content-between p-3 sticky-top main-header">
-      <a href="/" class="logo d-flex align-items-center gap-2 text-decoration-none">
-        <div class="logo-dot"></div>
-        CasoAbierto
-      </a>
-      <nav class="d-none d-md-flex align-items-center gap-4">
-        <a href="/">El Joc</a>
-        <a href="/com-jugar">Com Jugar</a>
-        <a href="#" class="active">Expedient</a>
-      </nav>
-      <div class="header-badge">Perfil Agent</div>
-    </header>
+    <AppHeader activePage="expedient" badgeText="Perfil Agent" />
 
     <!-- PROFILE HERO -->
     <section class="profile-hero p-5 overflow-hidden position-relative">
       <div class="profile-hero-inner container position-relative z-1 d-flex flex-column flex-md-row align-items-md-start gap-4">
         
-        <div class="agent-badge d-flex align-items-center justify-content-center position-relative flex-shrink-0">🕵️</div>
+        <div class="agent-badge d-flex align-items-center justify-content-center position-relative flex-shrink-0"><i class="bi bi-incognito"></i></div>
 
         <div class="profile-info flex-grow-1">
           <div class="profile-stamp d-inline-block mb-3">Dossier Confidencial · Agent Assignat</div>
@@ -117,7 +107,7 @@ onUnmounted(() => {
               <div class="dot rounded-circle border"></div>
             </div>
 
-            <a href="#" class="btn-play w-100 p-3 text-center text-decoration-none border-0 text-uppercase fw-bold">⚖ Continuar Investigació</a>
+            <a href="#" class="btn-play w-100 p-3 text-center text-decoration-none border-0 text-uppercase fw-bold"><i class="bi bi-scales me-2"></i>Continuar Investigació</a>
           </div>
 
           <!-- Cronòmetre -->
@@ -172,7 +162,7 @@ onUnmounted(() => {
             <div class="panel-tag position-absolute text-uppercase border-bottom-0 p-1 px-3">Arxiu Tancat</div>
             <ul class="attempt-list list-unstyled mt-3 mb-0">
               <li class="attempt-item d-flex align-items-center gap-3 p-3 border mb-2 bg-panel">
-                <div class="attempt-num fw-bold pb-1 px-2 text-center text-success-custom">✔</div>
+                <div class="attempt-num fw-bold pb-1 px-2 text-center text-success-custom"><i class="bi bi-check-lg"></i></div>
                 <div class="attempt-details flex-grow-1">
                   <div class="attempt-combo mb-1">
                     Cas #0007 — <span>Professora Plum</span> · Canelobre · Biblioteca
@@ -182,7 +172,7 @@ onUnmounted(() => {
                 <div class="attempt-result success text-uppercase border px-2 py-1">CAS TANCAT</div>
               </li>
               <li class="attempt-item d-flex align-items-center gap-3 p-3 border mb-2 bg-panel">
-                <div class="attempt-num fw-bold pb-1 px-2 text-center text-danger-custom">✘</div>
+                <div class="attempt-num fw-bold pb-1 px-2 text-center text-danger-custom"><i class="bi bi-x-lg"></i></div>
                 <div class="attempt-details flex-grow-1">
                   <div class="attempt-combo mb-1">
                     Cas #0006 — Srta. Escarlata · Ganivet · Saló
@@ -192,7 +182,7 @@ onUnmounted(() => {
                 <div class="attempt-result fail text-uppercase border px-2 py-1">ARXIVAT</div>
               </li>
               <li class="attempt-item d-flex align-items-center gap-3 p-3 border mb-2 bg-panel">
-                <div class="attempt-num fw-bold pb-1 px-2 text-center text-success-custom">✔</div>
+                <div class="attempt-num fw-bold pb-1 px-2 text-center text-success-custom"><i class="bi bi-check-lg"></i></div>
                 <div class="attempt-details flex-grow-1">
                   <div class="attempt-combo mb-1">
                     Cas #0005 — <span>Sr. Verd</span> · Clau anglesa · Billar
@@ -202,7 +192,7 @@ onUnmounted(() => {
                 <div class="attempt-result success text-uppercase border px-2 py-1">CAS TANCAT</div>
               </li>
               <li class="attempt-item d-flex align-items-center gap-3 p-3 border mb-2 bg-panel">
-                <div class="attempt-num fw-bold pb-1 px-2 text-center text-danger-custom">✘</div>
+                <div class="attempt-num fw-bold pb-1 px-2 text-center text-danger-custom"><i class="bi bi-x-lg"></i></div>
                 <div class="attempt-details flex-grow-1">
                   <div class="attempt-combo mb-1">
                     Cas #0004 — Sra. Blanch · Tub de Plom · Conservatori
@@ -212,7 +202,7 @@ onUnmounted(() => {
                 <div class="attempt-result fail text-uppercase border px-2 py-1">ARXIVAT</div>
               </li>
               <li class="attempt-item d-flex align-items-center gap-3 p-3 border mb-2 bg-panel">
-                <div class="attempt-num fw-bold pb-1 px-2 text-center text-success-custom">✔</div>
+                <div class="attempt-num fw-bold pb-1 px-2 text-center text-success-custom"><i class="bi bi-check-lg"></i></div>
                 <div class="attempt-details flex-grow-1">
                   <div class="attempt-combo mb-1">
                     Cas #0003 — <span>Coronel Mostaza</span> · Revòlver · Estudi
@@ -231,7 +221,7 @@ onUnmounted(() => {
           <!-- Rang -->
           <div class="rank-card p-4 mb-4 border position-relative bg-mid">
             <div class="rank-card-tag position-absolute text-uppercase p-1 px-3 border border-bottom-0">CREDENCIAL</div>
-            <div class="rank-icon pt-4 pb-2">🔍</div>
+            <div class="rank-icon pt-4 pb-2"><i class="bi bi-search"></i></div>
             <div class="rank-title mb-2">Inspector</div>
             <div class="rank-desc mb-4">Has demostrat instint investigador. La teva carrera avança cap al rang de Comissari.</div>
             <div class="xp-track">
@@ -252,37 +242,37 @@ onUnmounted(() => {
             <ul class="badges-grid list-unstyled mt-4 pt-2 mb-0 row g-2">
               <li class="col-4 badge-item-col">
                 <div class="badge-item p-2 border text-center h-100 bg-panel">
-                  <span class="badge-emoji pb-1">🥇</span>
+                  <span class="badge-emoji pb-1"><i class="bi bi-award"></i></span>
                   <span class="badge-name d-block">Primer Cas</span>
                 </div>
               </li>
               <li class="col-4 badge-item-col">
                 <div class="badge-item p-2 border text-center h-100 bg-panel">
-                  <span class="badge-emoji pb-1">⚡</span>
+                  <span class="badge-emoji pb-1"><i class="bi bi-lightning-charge"></i></span>
                   <span class="badge-name d-block">Resolució Ràpida</span>
                 </div>
               </li>
               <li class="col-4 badge-item-col">
                 <div class="badge-item p-2 border text-center h-100 bg-panel">
-                  <span class="badge-emoji pb-1">🎯</span>
+                  <span class="badge-emoji pb-1"><i class="bi bi-bullseye"></i></span>
                   <span class="badge-name d-block">2 Intents</span>
                 </div>
               </li>
               <li class="col-4 badge-item-col">
                 <div class="badge-item p-2 border text-center h-100 bg-panel opacity-50">
-                  <span class="badge-emoji pb-1">🔒</span>
+                  <span class="badge-emoji pb-1"><i class="bi bi-lock-fill"></i></span>
                   <span class="badge-name d-block">Sense Errors</span>
                 </div>
               </li>
               <li class="col-4 badge-item-col">
                 <div class="badge-item p-2 border text-center h-100 bg-panel opacity-50">
-                  <span class="badge-emoji pb-1">🔒</span>
+                  <span class="badge-emoji pb-1"><i class="bi bi-lock-fill"></i></span>
                   <span class="badge-name d-block">10 Casos</span>
                 </div>
               </li>
               <li class="col-4 badge-item-col">
                 <div class="badge-item p-2 border text-center h-100 bg-panel opacity-50">
-                  <span class="badge-emoji pb-1">🔒</span>
+                  <span class="badge-emoji pb-1"><i class="bi bi-lock-fill"></i></span>
                   <span class="badge-name d-block">Comissari</span>
                 </div>
               </li>
@@ -334,9 +324,9 @@ onUnmounted(() => {
         <span class="d-block mt-1">Operació Full-Stack · Django + Vue.js</span>
       </div>
       <div class="footer-links d-flex gap-3 mb-3 mb-md-0 flex-wrap">
-        <a href="/">El Joc</a>
-        <a href="/com-jugar">Com Jugar</a>
-        <a href="#">Expedient</a>
+        <a :href="getUrl('/')">El Joc</a>
+        <a :href="getUrl('/com-jugar')">Com Jugar</a>
+        <a :href="getUrl('/users')">Expedient</a>
         <a href="/admin">Admin</a>
       </div>
       <div class="footer-copy">

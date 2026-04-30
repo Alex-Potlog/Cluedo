@@ -1,18 +1,11 @@
+<script setup>
+import { getUrl } from '../utils.js'
+import AppHeader from './AppHeader.vue'
+</script>
+
 <template>
   <div class="caso-abierto-body">
-    <!-- HEADER -->
-    <header class="d-flex align-items-center justify-content-between p-3 sticky-top main-header">
-      <a href="/" class="logo d-flex align-items-center gap-2 text-decoration-none">
-        <div class="logo-dot"></div>
-        CasoAbierto
-      </a>
-      <nav class="d-none d-md-flex align-items-center gap-4">
-        <a href="/">El Joc</a>
-        <a href="#" class="active">Com Jugar</a>
-        <a href="/#expedient">Expedient</a>
-      </nav>
-      <div class="header-badge">Manual</div>
-    </header>
+    <AppHeader activePage="com-jugar" badgeText="Manual" />
 
     <!-- PAGE HERO -->
     <section class="page-hero px-4 py-5 overflow-hidden position-relative">
@@ -90,21 +83,21 @@
         <div class="row g-4">
           <div class="col-md-4">
             <div class="rule-card p-4 h-100 position-relative" data-rule="Regla 01">
-              <span class="rule-icon mb-3 d-block">⚖️</span>
+              <span class="rule-icon mb-3 d-block"><i class="bi bi-clock-history text-gold"></i></span>
               <h4 class="mb-2">L'ORM és la Llei</h4>
               <p class="mb-0">Tota interacció amb la base de dades s'ha de fer obligatòriament a través del Django ORM. No s'accepta SQL cru sota cap circumstància.</p>
             </div>
           </div>
           <div class="col-md-4">
             <div class="rule-card p-4 h-100 position-relative" data-rule="Regla 02">
-              <span class="rule-icon mb-3 d-block">🚫</span>
+              <span class="rule-icon mb-3 d-block"><i class="bi bi-slash-circle text-gold"></i></span>
               <h4 class="mb-2">Prohibit Recarregar</h4>
               <p class="mb-0">La vista de Vue.js és completament reactiva. Totes les accions —obtenir llistes, acusar— s'han de realitzar via JavaScript <code style="color:var(--gold-dim)">fetch</code>, sense cap recàrrega de pàgina.</p>
             </div>
           </div>
           <div class="col-md-4">
             <div class="rule-card p-4 h-100 position-relative" data-rule="Regla 03">
-              <span class="rule-icon mb-3 d-block">🏛️</span>
+              <span class="rule-icon mb-3 d-block"><i class="bi bi-bank text-gold"></i></span>
               <h4 class="mb-2">Silos Tecnològics</h4>
               <p class="mb-0">Vue.js s'encarrega exclusivament de la interfície i la interactivitat. Django gestiona exclusivament la seguretat de les dades i l'API. Cap dels dos envaeix el territori de l'altre.</p>
             </div>
@@ -122,7 +115,7 @@
         <div class="row g-4">
           <div class="col-md-6">
             <div class="verdict-card success p-4 h-100 d-flex gap-3">
-              <div class="verdict-icon">✔</div>
+              <div class="verdict-icon"><i class="bi bi-shield-check"></i></div>
               <div>
                 <h4 class="mb-2 text-success-custom">Correcte → El Cas es Tanca</h4>
                 <p class="mb-0">Has identificat correctament el personatge, l'arma i l'habitació. El sistema confirma l'acusació i declara el cas resolt. La teva reputació com a detectiu queda intacta.</p>
@@ -131,7 +124,7 @@
           </div>
           <div class="col-md-6">
             <div class="verdict-card fail p-4 h-100 d-flex gap-3">
-              <div class="verdict-icon">✘</div>
+              <div class="verdict-icon"><i class="bi bi-shield-x"></i></div>
               <div>
                 <h4 class="mb-2 text-danger-custom">Incorrecte → La Investigació Continua</h4>
                 <p class="mb-0">Un o més elements de la teva acusació no coincideixen amb la Solució Secreta. El sistema et pot proporcionar pistes parcials si has assolit el nivell Inspector o superior.</p>
@@ -165,21 +158,21 @@
         <p class="stamp mb-4 d-inline-block">Missió Activa</p>
         <h2 class="mb-3 position-relative z-1">Estàs llest per <em>resoldre</em> el cas?</h2>
         <p class="sub mb-4 position-relative z-1">El temps corre, Detectiu. Endinsa't al codi i resol el misteri.</p>
-        <a href="/#joc" class="btn-primary-custom position-relative z-1 text-decoration-none">⚖ Iniciar Investigació</a>
+        <a href="/#joc" class="btn-primary-custom position-relative z-1 text-decoration-none"><i class="bi bi-scales me-2"></i>Iniciar Investigació</a>
       </div>
 
     </main>
 
     <!-- FOOTER -->
     <footer class="d-flex flex-wrap align-items-center justify-content-between p-4 border-top shadow-sm">
-      <a href="/" class="footer-logo mb-3 mb-md-0 d-block text-decoration-none">
+      <a :href="getUrl('/')" class="footer-logo mb-3 mb-md-0 d-block text-decoration-none">
         CasoAbierto
         <span class="d-block mt-1">Operació Full-Stack · Django + Vue.js</span>
       </a>
       <div class="footer-links d-flex gap-3 mb-3 mb-md-0 flex-wrap">
-        <a href="/">El Joc</a>
-        <a href="#" class="active">Com Jugar</a>
-        <a href="/#expedient">Expedient</a>
+        <a :href="getUrl('/')">El Joc</a>
+        <a :href="getUrl('/com-jugar')" class="active">Com Jugar</a>
+        <a :href="getUrl('/users')">Expedient</a>
         <a href="/admin">Admin</a>
       </div>
       <div class="footer-copy">
