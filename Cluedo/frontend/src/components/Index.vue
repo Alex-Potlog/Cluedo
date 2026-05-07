@@ -1,55 +1,248 @@
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted, watchEffect } from 'vue'
 import { getUrl } from '../utils.js'
+import { fetchCsrf, postApi } from '../api.js'
 import AppHeader from './AppHeader.vue'
 
+// ---------------- Estat ----------------
 const acusacio = ref({
-  personatge: '',
-  arma: '',
-  habitacio: ''
+  acusado_id: '',
+  arma_id: '',
+  lugar_id: '',
 })
 
-const solucio = {
-  personatge: 'Professora Plum',
-  arma: 'Canelobre',
-  habitacio: 'Biblioteca'
-}
+const personatges = ref([])
+const armes = ref([])
+const habitacions = ref([])
+
+const isAuthenticated = ref(false)
+const cas = ref(null) // { id, intents_max, intents_usats, estat, ... }
+const ultimIntent = ref(null) // resposta del darrer POST /api/acusar/
+const carregant = ref(true)
+const enviant = ref(false)
 
 const mostrarResultat = ref(false)
 const resultatClasse = ref('')
 const missatgeResultat = ref('')
 
-const ferAcusacio = () => {
-  const p = acusacio.value.personatge
-  const a = acusacio.value.arma
-  const h = acusacio.value.habitacio
+// ---------------- Càrrega inicial ----------------
+const carregarCatalegs = async () => {
+  // Fem servir els endpoints individuals que demana l'enunciat.
+  try {
+    const [respP, respA, respH] = await Promise.all([
+      fetch('/api/personatges/', { credentials: 'include' }),
+      fetch('/api/armes/', { credentials: 'include' }),
+      fetch('/api/habitacions/', { credentials: 'include' }),
+    ])
+    const dataP = await respP.json()
+    const dataA = await respA.json()
+    const dataH = await respH.json()
+    personatges.value = dataP.personatges || []
+    armes.value = dataA.armes || []
+    habitacions.value = dataH.habitacions || []
+  } catch (err) {
+    console.error('Error carregant catàlegs:', err)
+  }
+}
 
-  if (!p || !a || !h) {
+const carregarCasActiu = async () => {
+  try {
+    const resp = await fetch('/api/cas/active/', { credentials: 'include' })
+    const data = await resp.json()
+    if (data && data.success) {
+      cas.value = data.cas
+    }
+  } catch (err) {
+    console.error('Error carregant cas actiu:', err)
+  }
+}
+
+const crearCasNou = async () => {
+  try {
+    const resp = await postApi('/api/cas/new/', {})
+    const data = await resp.json()
+    if (resp.ok && data.success) {
+      cas.value = data.cas
+      ultimIntent.value = null
+      mostrarResultat.value = false
+      acusacio.value = { acusado_id: '', arma_id: '', lugar_id: '' }
+    } else {
+      missatgeResultat.value = data.message || 'No s\'ha pogut crear el cas.'
+      resultatClasse.value = 'fail-border fail-bg color-fail'
+      mostrarResultat.value = true
+    }
+  } catch (err) {
+    console.error('Error creant cas nou:', err)
+  }
+}
+
+onMounted(async () => {
+  carregant.value = true
+  await fetchCsrf()
+  try {
+    const resp = await fetch('/api/status/', { credentials: 'include' })
+    const data = await resp.json()
+    isAuthenticated.value = !!data.is_authenticated
+  } catch (err) {
+    console.error('Error consultant status:', err)
+  }
+
+  await carregarCatalegs()
+
+  if (isAuthenticated.value) {
+    await carregarCasActiu()
+    if (!cas.value) {
+      await crearCasNou()
+    }
+  }
+  carregant.value = false
+})
+
+// ---------------- Helpers visuals ----------------
+const intentsUsats = computed(() => (cas.value ? cas.value.intents_usats : 0))
+const intentsMax = computed(() => (cas.value ? cas.value.intents_max : 5))
+const dotsIntents = computed(() => {
+  const total = intentsMax.value
+  const usats = intentsUsats.value
+  return Array.from({ length: total }, (_, i) => i < usats)
+})
+const casTancat = computed(() => cas.value && cas.value.estat !== 'en_curs')
+const intentsCas = computed(() => (cas.value && cas.value.intents) ? cas.value.intents : [])
+
+const lockedIdPer = (llista, encertaKey, nomKey) => {
+  const winning = intentsCas.value.find((i) => i[encertaKey])
+  if (!winning) return null
+  const found = llista.find((x) => x.nom === winning[nomKey])
+  return found ? found.id : null
+}
+const lockedAcusado = computed(() => lockedIdPer(personatges.value, 'encerta_acusado', 'acusado'))
+const lockedArma = computed(() => lockedIdPer(armes.value, 'encerta_arma', 'arma'))
+const lockedLugar = computed(() => lockedIdPer(habitacions.value, 'encerta_lugar', 'lugar'))
+
+watchEffect(() => {
+  if (lockedAcusado.value !== null) acusacio.value.acusado_id = lockedAcusado.value
+  if (lockedArma.value !== null) acusacio.value.arma_id = lockedArma.value
+  if (lockedLugar.value !== null) acusacio.value.lugar_id = lockedLugar.value
+})
+
+const nomPer = (llista, id) => {
+  const trobat = llista.find((x) => x.id === id)
+  return trobat ? trobat.nom : ''
+}
+
+const pad = (n) => String(n).padStart(2, '0')
+const codiCas = (id) => `#${String(id).padStart(4, '0')}`
+
+const formatDuracio = (totalSegons) => {
+  if (!totalSegons && totalSegons !== 0) return '--:--:--'
+  const h = Math.floor(totalSegons / 3600)
+  const m = Math.floor((totalSegons % 3600) / 60)
+  const s = totalSegons % 60
+  return `${pad(h)}:${pad(m)}:${pad(s)}`
+}
+
+const fa = (iso) => {
+  if (!iso) return ''
+  const ara = new Date()
+  const d = new Date(iso)
+  const diff = Math.max(0, Math.floor((ara - d) / 1000))
+  if (diff < 60) return `fa ${diff}s`
+  if (diff < 3600) return `fa ${Math.floor(diff / 60)} min`
+  if (diff < 86400) return `fa ${Math.floor(diff / 3600)} h`
+  return `fa ${Math.floor(diff / 86400)} d`
+}
+
+// ---------------- Acció: Acusar ----------------
+const ferAcusacio = async () => {
+  if (!isAuthenticated.value) {
     resultatClasse.value = 'fail-border fail-bg color-fail'
-    missatgeResultat.value = '⚠ Selecciona un sospitós, una arma i una habitació abans d\'acusar.'
+    missatgeResultat.value = 'Cal iniciar sessió per fer una acusació.'
     mostrarResultat.value = true
     return
   }
 
-  const correcte = (p === solucio.personatge && a === solucio.arma && h === solucio.habitacio)
+  const a = acusacio.value.acusado_id
+  const ar = acusacio.value.arma_id
+  const l = acusacio.value.lugar_id
 
-  if (correcte) {
-    resultatClasse.value = 'success-border success-bg color-success'
-    missatgeResultat.value = `✔ CAS TANCAT. Has descobert la veritat. ${p} va cometre el crim amb ${a.toLowerCase()} a la ${h}.`
-  } else {
-    let pistes = []
-    if (p === solucio.personatge) pistes.push('sospitós correcte')
-    if (a === solucio.arma) pistes.push('arma correcta')
-    if (h === solucio.habitacio) pistes.push('habitació correcta')
-    const msg = pistes.length > 0
-      ? ' Incorrecte. Pista: ' + pistes.join(', ') + '.'
-      : ' Acusació incorrecta. La investigació continua.'
-    
+  if (!a || !ar || !l) {
     resultatClasse.value = 'fail-border fail-bg color-fail'
-    missatgeResultat.value = msg
+    missatgeResultat.value = 'Selecciona un sospitós, una arma i una habitació abans d\'acusar.'
+    mostrarResultat.value = true
+    return
   }
-  mostrarResultat.value = true
+
+  if (casTancat.value) {
+    resultatClasse.value = 'fail-border fail-bg color-fail'
+    missatgeResultat.value = 'Aquest cas ja està tancat. Comença un cas nou per continuar.'
+    mostrarResultat.value = true
+    return
+  }
+
+  enviant.value = true
+  try {
+    const resp = await postApi('/api/acusar/', {
+      acusado_id: Number(a),
+      arma_id: Number(ar),
+      lugar_id: Number(l),
+    })
+    const data = await resp.json()
+
+    if (!resp.ok || !data.success) {
+      resultatClasse.value = 'fail-border fail-bg color-fail'
+      missatgeResultat.value = data.message || 'Error processant l\'acusació.'
+      mostrarResultat.value = true
+      return
+    }
+
+    cas.value = data.cas
+    ultimIntent.value = data.intent
+
+    const nomA = nomPer(personatges.value, Number(a))
+    const nomAr = nomPer(armes.value, Number(ar))
+    const nomL = nomPer(habitacions.value, Number(l))
+
+    if (data.intent.resultat === 'correcte') {
+      resultatClasse.value = 'success-border success-bg color-success'
+      missatgeResultat.value =
+        `CAS TANCAT. Has descobert la veritat. ${nomA} va cometre el crim amb ${nomAr.toLowerCase()} a ${nomL}.`
+    } else {
+      const pistes = []
+      if (data.intent.encerta_acusado) pistes.push('sospitós correcte')
+      if (data.intent.encerta_arma) pistes.push('arma correcta')
+      if (data.intent.encerta_lugar) pistes.push('habitació correcta')
+
+      let msg
+      if (data.cas_tancat) {
+        // Esgotats els intents. La solució ve al cas.
+        const sol = data.cas.solucio
+        msg = `CAS ARXIVAT. Has esgotat els intents. La solució era: ${sol.acusado} amb ${sol.arma.toLowerCase()} a ${sol.lugar}.`
+      } else if (pistes.length > 0) {
+        msg = `Acusació parcial. Pistes: ${pistes.join(', ')}.`
+      } else {
+        msg = 'Acusació incorrecta. Cap encert. La investigació continua.'
+      }
+      resultatClasse.value = data.cas_tancat
+        ? 'fail-border fail-bg color-fail'
+        : (pistes.length > 0
+            ? 'partial-border partial-bg color-partial'
+            : 'fail-border fail-bg color-fail')
+      missatgeResultat.value = msg
+    }
+    mostrarResultat.value = true
+  } catch (err) {
+    console.error('Error a /api/acusar/:', err)
+    resultatClasse.value = 'fail-border fail-bg color-fail'
+    missatgeResultat.value = 'Error de connexió amb el servidor.'
+    mostrarResultat.value = true
+  } finally {
+    enviant.value = false
+  }
+}
+
+const tornarAJugar = async () => {
+  await crearCasNou()
 }
 </script>
 
@@ -115,63 +308,108 @@ const ferAcusacio = () => {
         <div class="section-label mb-2">// Sala d'Interrogatoris</div>
         <h2 class="section-title mb-4">Fes la teva <em>acusació</em></h2>
 
+        <!-- Avis si no està autenticat -->
+        <div v-if="!isAuthenticated && !carregant" class="result-panel mb-4 p-3 border fail-border fail-bg color-fail">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          Cal <a :href="getUrl('/login')" class="auth-link-inline">iniciar sessió</a> per investigar un cas.
+        </div>
+
         <div class="attempts-row d-flex align-items-center gap-2 mb-4">
-          <div class="attempt-dot used"></div>
-          <div class="attempt-dot used"></div>
-          <div class="attempt-dot"></div>
-          <div class="attempt-dot"></div>
-          <div class="attempt-dot"></div>
-          <span class="attempts-label ms-2">2 / 5 intents usats</span>
+          <div
+            v-for="(usat, idx) in dotsIntents"
+            :key="idx"
+            class="attempt-dot"
+            :class="{ used: usat }"
+          ></div>
+          <span class="attempts-label ms-2">{{ intentsUsats }} / {{ intentsMax }} intents usats</span>
         </div>
 
         <div class="game-panel p-4 p-md-5 position-relative">
           <div class="row g-4 mb-4">
             <div class="col-md-4 form-group">
               <label class="d-block mb-2">Sospitós</label>
-              <select v-model="acusacio.personatge" class="w-100 form-select-custom">
+              <select v-model="acusacio.acusado_id" class="w-100 form-select-custom" :disabled="!isAuthenticated || casTancat || lockedAcusado !== null">
                 <option value="">— Selecciona —</option>
-                <option>Coronel Mostaza</option>
-                <option>Professora Plum</option>
-                <option>Srta. Escarlata</option>
-                <option>Dr. Negre</option>
-                <option>Sra. Blanch</option>
-                <option>Sr. Verd</option>
+                <option v-for="p in personatges" :key="p.id" :value="p.id">{{ p.nom }}</option>
               </select>
             </div>
             <div class="col-md-4 form-group">
               <label class="d-block mb-2">Arma</label>
-              <select v-model="acusacio.arma" class="w-100 form-select-custom">
+              <select v-model="acusacio.arma_id" class="w-100 form-select-custom" :disabled="!isAuthenticated || casTancat || lockedArma !== null">
                 <option value="">— Selecciona —</option>
-                <option>Canelobre</option>
-                <option>Ganivet</option>
-                <option>Tub de Plom</option>
-                <option>Revòlver</option>
-                <option>Corda</option>
-                <option>Clau anglesa</option>
+                <option v-for="a in armes" :key="a.id" :value="a.id">{{ a.nom }}</option>
               </select>
             </div>
             <div class="col-md-4 form-group">
               <label class="d-block mb-2">Habitació</label>
-              <select v-model="acusacio.habitacio" class="w-100 form-select-custom">
+              <select v-model="acusacio.lugar_id" class="w-100 form-select-custom" :disabled="!isAuthenticated || casTancat || lockedLugar !== null">
                 <option value="">— Selecciona —</option>
-                <option>Cuina</option>
-                <option>Sala de Ball</option>
-                <option>Conservatori</option>
-                <option>Billar</option>
-                <option>Biblioteca</option>
-                <option>Estudi</option>
-                <option>Vestíbul</option>
-                <option>Saló</option>
-                <option>Terrassa</option>
+                <option v-for="h in habitacions" :key="h.id" :value="h.id">{{ h.nom }}</option>
               </select>
             </div>
           </div>
 
-          <button class="acusar-btn w-100 py-3" @click="ferAcusacio"><i class="bi bi-scales me-2"></i>Acusar</button>
+          <button
+            v-if="!casTancat"
+            class="acusar-btn w-100 py-3"
+            :disabled="!isAuthenticated || enviant"
+            @click="ferAcusacio"
+          >
+            <i class="bi bi-scales me-2"></i>{{ enviant ? 'Enviant...' : 'Acusar' }}
+          </button>
+
+          <button
+            v-else
+            class="acusar-btn w-100 py-3"
+            @click="tornarAJugar"
+          >
+            <i class="bi bi-arrow-repeat me-2"></i>Tornar a jugar
+          </button>
 
           <div v-if="mostrarResultat" :class="['result-panel mt-4 p-3 border', resultatClasse]">
-            <i :class="missatgeResultat.includes('CAS TANCAT') ? 'bi bi-check-circle-fill me-2' : 'bi bi-exclamation-triangle-fill me-2'"></i>{{ missatgeResultat.replace('⚠ ', '').replace('✔ ', '') }}
+            <i :class="missatgeResultat.includes('CAS TANCAT') ? 'bi bi-check-circle-fill me-2' : 'bi bi-exclamation-triangle-fill me-2'"></i>{{ missatgeResultat }}
           </div>
+        </div>
+
+        <!-- Historial d'intents del cas en curs -->
+        <div v-if="cas && intentsCas.length" class="attempts-panel position-relative border bg-mid p-4 mt-4">
+          <div class="attempts-panel-tag position-absolute text-uppercase border-bottom-0 p-1 px-3">Intents · {{ codiCas(cas.id) }}</div>
+          <ul class="attempt-list list-unstyled mt-3 mb-0">
+            <li
+              v-for="intent in intentsCas"
+              :key="intent.numero"
+              class="attempt-item d-flex align-items-center gap-3 p-3 border mb-2 bg-panel"
+            >
+              <div class="attempt-num fw-bold pb-1 px-2 text-center">{{ pad(intent.numero) }}</div>
+              <div class="attempt-details flex-grow-1">
+                <div class="attempt-combo mb-1">
+                  <span :class="{ 'text-gold': intent.encerta_acusado }">{{ intent.acusado }}</span> ·
+                  <span :class="{ 'text-gold': intent.encerta_arma }">{{ intent.arma }}</span> ·
+                  <span :class="{ 'text-gold': intent.encerta_lugar }">{{ intent.lugar }}</span>
+                </div>
+                <div class="attempt-hints d-flex gap-2 flex-wrap mt-1">
+                  <span v-if="intent.encerta_acusado" class="hint-chip text-uppercase">sospitós correcte</span>
+                  <span v-if="intent.encerta_arma" class="hint-chip text-uppercase">arma correcta</span>
+                  <span v-if="intent.encerta_lugar" class="hint-chip text-uppercase">habitació correcta</span>
+                </div>
+                <div class="attempt-time mt-1">{{ fa(intent.creat_el) }} · {{ formatDuracio(intent.segons_des_inici) }}</div>
+              </div>
+              <div
+                class="attempt-result text-uppercase border px-2 py-1"
+                :class="{
+                  success: intent.resultat === 'correcte',
+                  partial: intent.resultat === 'parcial',
+                  fail: intent.resultat === 'incorrecte'
+                }"
+              >
+                {{
+                  intent.resultat === 'correcte' ? 'Correcte'
+                  : intent.resultat === 'parcial' ? 'Parcialment Correcte'
+                  : 'Incorrecte'
+                }}
+              </div>
+            </li>
+          </ul>
         </div>
       </section>
 
@@ -242,7 +480,7 @@ const ferAcusacio = () => {
   --muted: #7A738F;
   --border: rgba(212, 175, 122, 0.18);
   --border-hv: rgba(212, 175, 122, 0.45);
-  
+
   background: var(--bg-deep);
   color: var(--cream);
   font-family: 'IBM Plex Mono', monospace;
@@ -508,6 +746,7 @@ nav a:hover, nav a.active {
 }
 
 .form-select-custom:focus { border-color: var(--gold-dim); }
+.form-select-custom:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .acusar-btn {
   font-family: 'Special Elite', cursive;
@@ -521,6 +760,7 @@ nav a:hover, nav a.active {
 }
 
 .acusar-btn:hover { background: #d44030; letter-spacing: 0.35em; }
+.acusar-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .result-panel {
   font-family: 'Special Elite', cursive;
@@ -534,6 +774,12 @@ nav a:hover, nav a.active {
 .fail-border { border-color: var(--crimson) !important; }
 .fail-bg { background: rgba(192, 57, 43, 0.08) !important; }
 .color-fail { color: #e74c3c !important; }
+
+.partial-border { border-color: var(--gold-dim) !important; }
+.partial-bg { background: rgba(212, 175, 122, 0.08) !important; }
+.color-partial { color: var(--gold) !important; }
+
+.auth-link-inline { color: var(--gold); text-decoration: underline; }
 
 .step { border-left-color: var(--border) !important; transition: border-left-color 0.2s; }
 .step:hover { border-left-color: var(--gold-dim) !important; }
@@ -565,6 +811,29 @@ nav a:hover, nav a.active {
 }
 .attempt-dot.used { background: var(--crimson); border-color: var(--crimson); }
 .attempts-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); letter-spacing: 0.1em; }
+
+.attempts-panel { background: var(--bg-mid); }
+.attempts-panel-tag {
+  top: -1px; left: 2rem; background: var(--bg-panel);
+  font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem; letter-spacing: 0.18em;
+  color: var(--gold-dim); border: 1px solid var(--border); border-top: none;
+}
+.attempt-item { transition: border-color 0.2s; }
+.attempt-item:hover { border-color: var(--border-hv) !important; }
+.attempt-num { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--gold-dim); min-width: 28px; }
+.attempt-combo { font-family: 'Special Elite', cursive; font-size: 0.88rem; color: var(--cream); }
+.attempt-combo .text-gold { color: var(--gold) !important; }
+.attempt-time { font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; color: var(--muted); letter-spacing: 0.1em; }
+.attempt-result { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 0.1em; }
+.attempt-result.fail { color: var(--crimson); border-color: var(--crimson) !important; background: rgba(192,57,43,0.08); }
+.attempt-result.success { color: #2ecc71; border-color: #27ae60 !important; background: rgba(39, 174, 96, 0.08); }
+.attempt-result.partial { color: var(--gold); border-color: var(--gold-dim) !important; background: rgba(212,175,122,0.07); }
+.hint-chip {
+  font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem; letter-spacing: 0.08em;
+  padding: 2px 7px; border: 1px solid rgba(212,175,122,0.25); color: var(--gold-dim);
+  background: rgba(212,175,122,0.05);
+}
+.bg-panel { background: var(--bg-panel); }
 
 footer { background: rgba(13, 11, 20, 0.8); border-top: 1px solid var(--border); }
 .footer-logo { font-family: 'Special Elite', cursive; font-size: 1rem; color: var(--gold); }
